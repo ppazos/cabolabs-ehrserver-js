@@ -1,0 +1,73 @@
+<html>
+  <head>
+    <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript">
+    
+    var ehr_server = {
+ 
+      base_url: undefined,
+      get_patients: "/rest/patientList?format=json&callback=?",
+      get_patient: "/rest/getPatient?uid=${uid}&format=json&callback=?",
+      get_ehrs: "/rest/ehrList?format=json&callback=?",
+      
+      init: function(url) {
+        this.base_url = url;
+      },
+      patients: function (callback) {
+        $.getJSON(this.base_url + this.get_patients, null, function(data) {  
+          console.log( data );
+          callback(data);
+        }); 
+      },
+      patient: function (uid, callback) {
+        $.getJSON(this.base_url + this.get_patient, null, function(data) {  
+          console.log( data );
+          callback(data);
+        }); 
+      },
+      ehrs: function (callback) {
+        $.getJSON(this.base_url + this.get_ehrs, null, function(data) {  
+          console.log( data );
+          callback(data);
+        }); 
+      }
+    };
+    
+    
+    $(document).ready(function() {
+    
+       console.log(ehr_server);
+    
+       ehr_server.init('http://localhost:8090/ehr');
+    
+       $('#patients').on('click', function (){
+         ehr_server.patients(
+           function(data) {
+             $('#out').text( JSON.stringify(data, null, "  ") )
+           }
+         );
+       });
+       
+       $('#ehrs').on('click', function (){
+         ehr_server.ehrs(
+           function(data) {
+             $('#out').text( JSON.stringify(data, null, "  ") )
+           }
+         );
+       });
+    
+       
+       //var url = 'http://localhost:8090/ehr/rest/patientList?format=json&callback=?';  
+       //$.getJSON(url, null, function(data) {  
+       //   console.log( data );  
+       //});
+       
+    });
+    </script>
+  </head>
+  <body>
+    <button id="patients">patients</button>
+    <button id="ehrs">ehrs</button>
+    <textarea id="out" rows="20" cols="80"></textarea>
+  </body>
+</html>
