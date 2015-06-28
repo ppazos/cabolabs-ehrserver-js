@@ -1,143 +1,16 @@
 <html>
   <head>
     <script src="http://code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script src="ehrserver_ajax_client.js"></script>
+    <!--<script src="ehrserver_jsonp_client.js"></script>-->
     <script type="text/javascript">
-    // https://gist.github.com/malsup/82181
-    // fn to handle jsonp with timeouts and errors
-    // hat tip to Ricardo Tomasi for the timeout logic
-    $.getJSONP = function(s) {
-        s.dataType = 'jsonp';
-        $.ajax(s);
- 
-        // figure out what the callback fn is
-        var $script = $(document.getElementsByTagName('head')[0].firstChild);
-        var url = $script.attr('src') || '';
-        var cb = (url.match(/callback=(\w+)/)||[])[1];
-        if (!cb)
-            return; // bail
-        var t = 0, cbFn = window[cb];
- 
-        $script[0].onerror = function(e) {
-            $script.remove();
-            handleError(s, {}, "error", e);
-            clearTimeout(t);
-        };
- 
-        if (!s.timeout)
-            return;
- 
-        window[cb] = function(json) {
-            clearTimeout(t);
-            cbFn(json);
-            cbFn = null;
-        };
- 
-        t = setTimeout(function() {
-            $script.remove();
-            handleError(s, {}, "timeout");
-            if (cbFn)
-                window[cb] = function(){};
-        }, s.timeout);
-        
-        function handleError(s, o, msg, e) {
-            // support jquery versions before and after 1.4.3
-            ($.ajax.handleError || $.handleError)(s, o, msg, e);
-        }
-    };
-    
-    $.handleError = function(s, xhr, status, e) {
-       // If a local callback was specified, fire it
-       if ( s.error ) {
-           s.error.call( s.context || window, xhr, status, e );
-       }
-
-       // Fire the global callback
-       if ( s.global ) {
-           (s.context ? jQuery(s.context) : jQuery.event).trigger( "ajaxError", [xhr, s, e] );
-       }
-    };
-    
-    var ehr_server = {
- 
-      base_url: undefined,
-      get_patients: "/rest/patientList?format=json&callback=?",
-      get_patient: "/rest/getPatient?uid=${uid}&format=json&callback=?",
-      get_ehrs: "/rest/ehrList?format=json&callback=?",
-      get_ehr: "/rest/ehrGet?ehrUid=${uid}&format=json&callback=?",
-      //get_ehr_for_patient: "/rest/ehrForSubject?subjectUid=${uid}&format=json&callback=?",
-      get_ehr_for_patient: "/rest/ehrForSubject",
-      get_queries: "/rest/queryList?format=json&callback=?",
-      
-      init: function(url) {
-        this.base_url = url;
-      },
-      patients: function (callback) {
-        $.getJSON(this.base_url + this.get_patients, null, function(data) {  
-          console.log( data );
-          callback(data);
-        }); 
-      },
-      patient: function (patient_uid, callback) {
-        $.getJSON(this.base_url + this.get_patient.replace("${uid}", patient_uid), null, function(data) {  
-          console.log( data );
-          callback(data);
-        }); 
-      },
-      ehrs: function (callback) {
-        $.getJSON(this.base_url + this.get_ehrs, null, function(data) {  
-          console.log( data );
-          callback(data);
-        }); 
-      },
-      ehr: function (ehr_uid, callback) {
-        $.getJSON(this.base_url + this.get_ehr.replace("${uid}", ehr_uid), null, function(data) {  
-          console.log( data );
-          callback(data);
-        }); 
-      },
-      ehr_for_patient: function (patient_uid, callback) {
-        /*
-        $.getJSONP(this.base_url + this.get_ehr_for_patient.replace("${uid}", patient_uid), null, function(data) {  
-          console.log( data );
-          callback(data);
-        })
-        */
-        
-        $.ajax({
-          url: this.base_url + this.get_ehr_for_patient,
-          method: 'GET',
-          data: {subjectUid: patient_uid, format: 'json'}
-        })
-        .done( function (data) {
-          callback(data);
-        })
-        .fail( function (jqXHR, textStatus, errorThrown) {
-          data = $.parseJSON(jqXHR.responseText); // for errors 400/500 ajax doesnt do json parsin
-          //console.log(parsedjson, textStatus, errorThrown);
-          callback(data); // TODO: allow passing an error callback
-        });
-      },
-      queries: function (callback) {
-        $.getJSON(this.base_url + this.get_queries, null, function(data) {  
-          console.log( data );
-          callback(data);
-        })
-        .fail(
-          function( jqxhr, textStatus, error ) {
-             var err = textStatus + ", " + error;
-             console.log( "Request Failed: " + err );
-          }
-        );
-      }
-    };
-    
-    
     $(document).ready(function() {
     
-       ehr_server.init('http://localhost:8090/ehr');
+       var ehrserver = ehrserver_ajax_client;
+       ehrserver.init('http://localhost:8090/ehr');
     
        $('#patients').on('click', function (){
-         ehr_server.patients(
+         ehrserver.patients(
            function(data) {
              $('#out').text( JSON.stringify(data, null, "  ") )
            }
@@ -145,7 +18,7 @@
        });
        
        $('#patient').on('click', function (){
-         ehr_server.patient(
+         ehrserver.patient(
            $('input[name=patient_uid]').val(),
            function(data) {
              $('#out').text( JSON.stringify(data, null, "  ") )
@@ -154,7 +27,7 @@
        });
        
        $('#ehrs').on('click', function (){
-         ehr_server.ehrs(
+         ehrserver.ehrs(
            function(data) {
              $('#out').text( JSON.stringify(data, null, "  ") )
            }
@@ -162,7 +35,7 @@
        });
        
        $('#ehr').on('click', function (){
-         ehr_server.ehr(
+         ehrserver.ehr(
            $('input[name=ehr_uid]').val(),
            function(data) {
              $('#out').text( JSON.stringify(data, null, "  ") )
@@ -171,7 +44,7 @@
        });
        
        $('#ehr_for_patient').on('click', function (){
-         ehr_server.ehr_for_patient(
+         ehrserver.ehr_for_patient(
            $('input[name=ehr_patient_uid]').val(),
            function(data) {
              $('#out').text( JSON.stringify(data, null, "  ") )
@@ -180,7 +53,7 @@
        });
        
        $('#queries').on('click', function (){
-         ehr_server.queries(
+         ehrserver.queries(
            function(data) {
              $('#out').text( JSON.stringify(data, null, "  ") )
            }
