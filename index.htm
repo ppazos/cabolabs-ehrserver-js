@@ -8,7 +8,24 @@
     
        var ehrserver = ehrserver_ajax_client;
        //ehrserver.init('http://localhost:8090/ehr');
-       ehrserver.init('https://cabolabs-ehrserver.rhcloud.com/ehr-0.2');
+       ehrserver.init('https://cabolabs-ehrserver.rhcloud.com/ehr');
+    
+       $('#login').on('click', function (){
+         ehrserver.login(
+           $('input[name=username]').val(),
+           $('input[name=password]').val(),
+           $('input[name=organization]').val(),
+           function(data) {
+             $('#out').text( JSON.stringify(data, null, "  ") );
+             
+             if (ehrserver.is_authenticated())
+             {
+               $('#login_status').removeClass('not_auth');
+               $('#login_status').addClass('auth');
+             }
+           }
+         );
+       });
     
        $('#patients').on('click', function (){
          ehrserver.patients(
@@ -53,6 +70,15 @@
          );
        });
        
+       $('#contributions').on('click', function (){
+         ehrserver.contributions(
+           $('input[name=contributions_ehr_uid]').val(),
+           function(data) {
+             $('#out').text( JSON.stringify(data, null, "  ") )
+           }
+         );
+       });
+       
        $('#queries').on('click', function (){
          ehrserver.queries(
            function(data) {
@@ -78,10 +104,32 @@
       textarea {
         width: 100%;
       }
+      #login_status {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        background-size: 20px 20px;
+        background-repeat: no-repeat;
+      }
+      #login_status.not_auth {
+        background-image: url("http://www.clipartkid.com/images/485/not-allowed-sign-clipart-download-j2CTjB-clipart.png");
+      }
+      #login_status.auth {
+        background-image: url("http://cliparts.co/cliparts/pio/da5/pioda5AbT.png");
+      }
     </style>
   </head>
   <body>
     <div id="buttons">
+    
+       <fieldset>
+         <input type="text" name="username" placeholder="username" />
+         <input type="text" name="password" placeholder="password" />
+         <input type="text" name="organization" placeholder="organization" />
+         <button id="login">login</button>
+         <span id="login_status" class="not_auth"></span>
+       </fieldset>
+    
        <button id="patients">patients</button>
        <fieldset>
          <input type="text" name="patient_uid" placeholder="patient uid" />
@@ -96,6 +144,11 @@
        <fieldset>
          <input type="text" name="ehr_patient_uid" placeholder="patient uid" />
          <button id="ehr_for_patient">ehr for patient</button>
+       </fieldset>
+       
+       <fieldset>
+         <input type="text" name="contributions_ehr_uid" placeholder="ehr uid" />
+         <button id="contributions">contributions for ehr</button>
        </fieldset>
        
        <button id="queries">queries</button>
