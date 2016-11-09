@@ -8,15 +8,22 @@
     
        var ehrserver = ehrserver_ajax_client;
        //ehrserver.init('http://localhost:8090/ehr');
-       ehrserver.init('https://cabolabs-ehrserver.rhcloud.com/ehr');
+       ehrserver.init('https://cabolabs-ehrserver.rhcloud.com/');
+    
+       var show_status = function(status, statusText) {
+       
+         $("input[name='status']").val(status +" "+ statusText);
+       };
     
        $('#login').on('click', function (){
          ehrserver.login(
            $('input[name=username]').val(),
            $('input[name=password]').val(),
            $('input[name=organization]').val(),
-           function(data) {
+           function(data, status, statusText) {
+           
              $('#out').text( JSON.stringify(data, null, "  ") );
+             show_status(status, statusText);
              
              if (ehrserver.is_authenticated())
              {
@@ -29,8 +36,9 @@
     
        $('#patients').on('click', function (){
          ehrserver.patients(
-           function(data) {
-             $('#out').text( JSON.stringify(data, null, "  ") )
+           function(data, status, statusText) {
+             $('#out').text( JSON.stringify(data, null, "  ") );
+             show_status(status, statusText);
            }
          );
        });
@@ -38,16 +46,18 @@
        $('#patient').on('click', function (){
          ehrserver.patient(
            $('input[name=patient_uid]').val(),
-           function(data) {
-             $('#out').text( JSON.stringify(data, null, "  ") )
+           function(data, status, statusText) {
+             $('#out').text( JSON.stringify(data, null, "  ") );
+             show_status(status, statusText);
            }
          );
        });
        
        $('#ehrs').on('click', function (){
          ehrserver.ehrs(
-           function(data) {
-             $('#out').text( JSON.stringify(data, null, "  ") )
+           function(data, status, statusText) {
+             $('#out').text( JSON.stringify(data, null, "  ") );
+             show_status(status, statusText);
            }
          );
        });
@@ -55,8 +65,9 @@
        $('#ehr').on('click', function (){
          ehrserver.ehr(
            $('input[name=ehr_uid]').val(),
-           function(data) {
-             $('#out').text( JSON.stringify(data, null, "  ") )
+           function(data, status, statusText) {
+             $('#out').text( JSON.stringify(data, null, "  ") );
+             show_status(status, statusText);
            }
          );
        });
@@ -64,8 +75,9 @@
        $('#ehr_for_patient').on('click', function (){
          ehrserver.ehr_for_patient(
            $('input[name=ehr_patient_uid]').val(),
-           function(data) {
-             $('#out').text( JSON.stringify(data, null, "  ") )
+           function(data, status, statusText) {
+             $('#out').text( JSON.stringify(data, null, "  ") );
+             show_status(status, statusText);
            }
          );
        });
@@ -73,16 +85,18 @@
        $('#contributions').on('click', function (){
          ehrserver.contributions(
            $('input[name=contributions_ehr_uid]').val(),
-           function(data) {
-             $('#out').text( JSON.stringify(data, null, "  ") )
+           function(data, status, statusText) {
+             $('#out').text( JSON.stringify(data, null, "  ") );
+             show_status(status, statusText);
            }
          );
        });
        
        $('#queries').on('click', function (){
          ehrserver.queries(
-           function(data) {
-             $('#out').text( JSON.stringify(data, null, "  ") )
+           function(data, status, statusText) {
+             $('#out').text( JSON.stringify(data, null, "  ") );
+             show_status(status, statusText);
            }
          );
        });
@@ -101,7 +115,7 @@
         margin: 1em;
         border: 1px solid #aaa;
       }
-      textarea {
+      textarea, input[name=status] {
         width: 100%;
       }
       #login_status {
@@ -152,6 +166,9 @@
        </fieldset>
        
        <button id="queries">queries</button>
+    </div>
+    <div id="status">
+      <input type="text" name="status" value="" />
     </div>
     <div id="output">
       <textarea id="out" rows="40"></textarea>
