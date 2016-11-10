@@ -43,7 +43,9 @@ var ehrserver_ajax_client = {
      $.ajax({
        url: this.base_url + this.get_patients,
        method: 'GET',
-       beforeSend: function(xhr) { console.log(this); xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token); },
+       beforeSend: function(xhr) {
+         xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token);
+       },
        data: {format: 'json'}
      })
      .done( function (data, textStatus, jqXHR) {
@@ -63,7 +65,9 @@ var ehrserver_ajax_client = {
      $.ajax({
        url: this.base_url + this.get_patient + patient_uid,
        method: 'GET',
-       beforeSend: function(xhr) { console.log(this); xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token); },
+       beforeSend: function(xhr) {
+         xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token);
+       },
        data: {format: 'json'}
      })
      .done( function (data, textStatus, jqXHR) {
@@ -79,7 +83,9 @@ var ehrserver_ajax_client = {
      $.ajax({
        url: this.base_url + this.get_ehrs,
        method: 'GET',
-       beforeSend: function(xhr) { console.log(this); xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token); },
+       beforeSend: function(xhr) {
+         xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token);
+       },
        data: {format: 'json'}
      })
      .done( function (data, textStatus, jqXHR) {
@@ -90,11 +96,18 @@ var ehrserver_ajax_client = {
        callback(data, jqXHR.status, jqXHR.statusText); // TODO: allow passing an error callback
      });
    },
-   ehr: function (ehr_uid, callback) {     
+   ehr: function (ehr_uid, callback) {    
+     if (!ehr_uid)
+     {
+        console.log("ehr_uid is required");
+        return false;
+     }   
      $.ajax({
        url: this.base_url + this.get_ehr + ehr_uid,
        method: 'GET',
-       beforeSend: function(xhr) { console.log(this); xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token); },
+       beforeSend: function(xhr) {
+         xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token);
+       },
        data: {format: 'json'}
      })
      .done( function (data, textStatus, jqXHR) {
@@ -104,12 +117,20 @@ var ehrserver_ajax_client = {
        data = $.parseJSON(jqXHR.responseText); // for errors 400/500 ajax doesnt do json parsing
        callback(data, jqXHR.status, jqXHR.statusText); // TODO: allow passing an error callback
      });
+     return true;
    },
    ehr_for_patient: function (patient_uid, callback) {
+     if (!patient_uid)
+     {
+        console.log("patient_uid is required");
+        return false;
+     } 
      $.ajax({
        url: this.base_url + this.get_ehr_for_patient + patient_uid,
        method: 'GET',
-       beforeSend: function(xhr) { console.log(this); xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token); },
+       beforeSend: function(xhr) {
+         xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token);
+       },
        data: {format: 'json'}
      })
      .done( function (data, textStatus, jqXHR) {
@@ -119,12 +140,20 @@ var ehrserver_ajax_client = {
        data = $.parseJSON(jqXHR.responseText); // for errors 400/500 ajax doesnt do json parsing
        callback(data, jqXHR.status, jqXHR.statusText); // TODO: allow passing an error callback
      });
+     return true;
    },
    contributions: function (ehr_uid, callback) {
+     if (!ehr_uid)
+     {
+        console.log("ehr_uid is required");
+        return false;
+     } 
      $.ajax({
        url: this.base_url + this.get_contributions,
        method: 'GET',
-       beforeSend: function(xhr) { console.log(this); xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token); },
+       beforeSend: function(xhr) {
+         xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token);
+       },
        data: {ehrUid: ehr_uid, format: 'json'}
      })
      .done( function (data, textStatus, jqXHR) {
@@ -134,12 +163,15 @@ var ehrserver_ajax_client = {
        data = $.parseJSON(jqXHR.responseText); // for errors 400/500 ajax doesnt do json parsing
        callback(data, jqXHR.status, jqXHR.statusText); // TODO: allow passing an error callback
      });
+     return true;
    },
    queries: function (callback) {
      $.ajax({
        url: this.base_url + this.get_queries,
        method: 'GET',
-       beforeSend: function(xhr) { console.log(this); xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token); },
+       beforeSend: function(xhr) {
+         xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token);
+       },
        data: {format: 'json'}
      })
      .done( function (data, textStatus, jqXHR) {
@@ -150,5 +182,5 @@ var ehrserver_ajax_client = {
        callback(data, jqXHR.status, jqXHR.statusText); // TODO: allow passing an error callback
      });
    }
- };
+};
  
