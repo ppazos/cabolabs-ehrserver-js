@@ -10,7 +10,7 @@
     
        var ehrserver = ehrserver_ajax_client;
        //ehrserver.init('http://localhost:8090/ehr');
-       ehrserver.init('https://cabolabs-ehrserver.rhcloud.com/');
+       ehrserver.init('https://ehrserver-cabolabs2.rhcloud.com/');
     
        var show_status = function(status, statusText) {
        
@@ -35,19 +35,10 @@
            }
          );
        });
-    
-       $('#patients').on('click', function (){
-         ehrserver.patients(
-           function(data, status, statusText) {
-             $('#out').text( JSON.stringify(data, null, "  ") );
-             show_status(status, statusText);
-           }
-         );
-       });
        
-       $('#patient').on('click', function (){
-         ehrserver.patient(
-           $('input[name=patient_uid]').val(),
+       $('#user').on('click', function (){
+         ehrserver.user(
+           $('input[name=username2]').val(),
            function(data, status, statusText) {
              $('#out').text( JSON.stringify(data, null, "  ") );
              show_status(status, statusText);
@@ -146,10 +137,9 @@
          <span id="login_status" class="not_auth"></span>
        </fieldset>
     
-       <button id="patients">patients</button>
        <fieldset>
-         <input type="text" name="patient_uid" placeholder="patient uid" />
-         <button id="patient">patient</button>
+         <input type="text" name="username2" placeholder="username" />
+         <button id="user">user profile</button>
        </fieldset>
        
        <button id="ehrs">ehrs</button>
