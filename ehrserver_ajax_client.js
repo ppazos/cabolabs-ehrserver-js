@@ -31,11 +31,11 @@ var ehrserver_ajax_client = {
      })
      .done( function (data, textStatus, jqXHR) {
        ehrserver_ajax_client.token = data.token;
-       callback(data, jqXHR.status, jqXHR.statusText);
+       if (callback) callback(data, jqXHR.status, jqXHR.statusText);
      })
      .fail( function (jqXHR, textStatus, errorThrown) {
        data = $.parseJSON(jqXHR.responseText); // for errors 400/500 ajax doesnt do json parsing
-       callback(data, jqXHR.status, jqXHR.statusText); // TODO: allow passing an error callback
+       if (callback) callback(data, jqXHR.status, jqXHR.statusText); // TODO: allow passing an error callback
      });
    },
    set_api_key: function (apikey, callback) {
