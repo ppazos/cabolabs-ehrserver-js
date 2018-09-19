@@ -11,8 +11,8 @@ See index.html
 ### Setup
 
     var ehrserver = ehrserver_ajax_client;
-    ehrserver.init('https://cabolabs-ehrserver.rhcloud.com/ehr-0.2');
-    
+    ehrserver.init('http://localhost:8090'); // change for the IP or domain of your server
+
 ### Sample service invocation
 
 Get patient list, and show the result in a textarea with id=out

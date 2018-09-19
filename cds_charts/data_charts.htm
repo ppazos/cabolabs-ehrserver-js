@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>CaboLabs EHRServer tests</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <style>
+    #status {
+      text-align: right;
+      color: #333;
+      margin: 10px;
+    }
+    .chartContainer {
+      width: 100%;
+    }
+    </style>
+  </head>
+  <body>
+    <div id="status"></div>
+    <div id="results"></div>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+    <script src="highcharts.js"></script>
+
+    <script src="../ehrserver_ajax_client.js"></script>
+    <script type="text/javascript">
+
+    var ehrserver = ehrserver_ajax_client;
+    var ehrs;
+    var ehr_queries;
+    var chart_id = 1;
+    var session_lang = 'es';
+
+    $( document ).ajaxStop(function() {
+     $('#status').text('Se verificaron todas las alertas');
+    });
+
+    $(document).ready(function() {
+
+      ehrserver.init('https://server001.cloudehrserver.com');
+      ehrserver.set_api_key('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFwaWtleW5yZmp6Y2pwaWRyc3BobmRxcHBmaHBzcHRobWxyeHRjZmF4YWJpbm1jenJpZXZwd3BsIiwiZXh0cmFkYXRhIjp7Im9yZ2FuaXphdGlvbiI6IjcyMzcyMiIsIm9yZ191aWQiOiI1NzkxOTk5MS1mYWExLTQ0YzQtODM2ZC1kYTgyY2I4MjkwZGMifSwiaXNzdWVkX2F0IjoiMjAxNy0xMS0xMVQxNzo0NDoyMy4xNzUtMDI6MDAifQ==.PH45CpeeWd/vlKAjuTsIGS/9ib/vQQVxV1oq0BuAyfc=');
+      get_ehrs();
+      /*
+      ehrserver.init('http://localhost:8090');
+      ehrserver.login('orgman','orgman','123456', function(data, status, statusText){
+        get_ehrs(); // should be called after the login responds
+      });
+      */
+    });
+
+    var get_ehrs = function()
+    {
+      $('#status').text('Buscando EHRs');
+      ehrserver.ehrs(10, 0, function(data, status, statusText) {
+
+        $('#results').append('<table class="table"><tr><th>EHR UID</th><th>Fecha EHR</th><th>ID Paciente</th><th>Graficas</th></tr></table>');
+        rows = '';
+        data.ehrs.forEach(function(e, i){
+
+          rows += '<tr data-ehr="'+ e.uid +'"><td>'+ e.uid +'</td><td>'+ e.dateCreated + '</td><td>'+ e.subjectUid + '</td><td></td></tr>';
+        });
+
+        $('#results > table').append(rows);
+
+        $('#status').text('Listado de EHRs');
+
+        ehrs = data.ehrs;
+
+        get_queries();
+      });
+    };
+
+    var get_queries = function()
+    {
+      colors = ['primary', 'success', 'info', 'warning', 'danger'];
+      ehrserver.queries(30, 0, function(data, status, statusText) {
+
+        queries = data.queries;
+
+        ehrs.forEach(function(e, i){
+          queries.forEach(function(q, j){
+            //console.log(q);
+            if (q.type == 'datavalue' && q.group == 'path') // only execute datavalue queries, need just data
+              execute(q, e, colors[j % colors.length]);
+          });
+        });
+      });
+    };
+
+    var execute = function(query, ehr, color)
+    {
+      $('#status').text('Ejecutando consultas');
+      ehrserver.query_execute(query.uid, ehr.uid, function(data, status, statusText) {
+        console.log(data);
+        // TODO: use query builder chart render
+        if (data)
+        {
+          $('tr[data-ehr='+ ehr.uid +']').find('td:last').append('<div class="chartContainer" id="chartContainer_'+ chart_id +'"></div>');
+
+          queryDataRenderChart(data.results, 'chartContainer_'+ chart_id, query.name);
+
+          chart_id++;
+        }
+
+      });
+    };
+
+    var renderchart = function(series, containerId, title)
+    {
+      // =============================================================================
+      // TEST CHART:
+      //
+      // TODO: necesito las fechas para ubicar valores en X
+      // - las series se separan por path y se grafican juntas
+      //
+      chart = new Highcharts.Chart({
+        chart: {
+          renderTo: containerId,
+          width: 600,
+          type: 'line',
+          zoomType: 'x' // lo deja hacer zoom en el eje x, y o ambos: xy
+        },
+        title: {
+          text: title
+        },
+        xAxis: {
+          categories: []
+        },
+        /* depende de lo que este graficando!
+        yAxis: {
+          title: {
+            text: 'Blood Pressure mmHg' // TODO: obtener del arquetipo
+          }
+        },
+        */
+        plotOptions: {
+          line: {
+            dataLabels: {
+              enabled: true
+            }
+          }
+        },
+        series: series
+      });
+    }; //renderchart
+
+    var queryDataRenderChart = function(data, containerId, title)
+    {
+       //console.log('queryDataRenderChart', data);
+       /*
+       series: [{
+         name: 'Jane',
+         data: [1, 0, 4]
+       }, {
+         name: 'John',
+         data: [5, 7, 3]
+       }]
+       */
+       var series = [];
+       var point;
+
+       // FIXME: externalize point builders, it doesnt need to be created on each call.
+       // El punto a graficar depende del tipo de dato, se usa
+       // point_builders para resolver la construccion del punto.
+       var point_builders = {
+          DV_ORDINAL: function (dvi) {
+             return {
+                name: dvi.value +' ('+ dvi.symbol_value +')',
+                   y: dvi.value
+             };
+          },
+          DV_COUNT: function (dvi) {
+             return {
+                name: dvi.magnitude,
+                   y: dvi.magnitude
+             };
+          },
+          DV_PROPORTION: function (dvi) {
+             // TODO: show proportion kind: percentage, etc.
+             return {
+                name: dvi.numerator+' '+dvi.denominator,
+                   y: dvi.numerator / dvi.denominator
+             };
+          },
+          DV_QUANTITY: function (dvi) {
+             return {
+                name: dvi.magnitude+' '+dvi.units,
+                   y: dvi.magnitude
+             };
+          },
+          DV_DURATION: function (dvi) {
+             return {
+                name: dvi.magnitude+' seconds',
+                   y: dvi.magnitude
+             };
+          }
+       };
+
+       /*
+       data = {
+         ehrUid {
+            path: {
+               type: 'xx',
+               name: 'yy',
+               serie: [ dvi, dvi, dvi ]
+            }
+         }
+       }
+       */
+       $.each( data, function(ehdUid, pathdata) {
+
+          $.each( pathdata, function(path, dviseries) {
+
+            //console.log('path y dviseries', path, dviseries);
+
+            // Filter: only chart numeric data
+            if ( $.inArray(dviseries.type, ['DV_QUANTITY', 'DV_COUNT', 'DV_PROPORTION', 'DV_ORDINAL', 'DV_DURATION']) == -1)
+            {
+               //console.log('type filtered '+ dviseries.type);
+               return;
+            }
+
+            /**
+             * Estructura:
+             *   { name: 'John', data: [5, 7, 3] }
+             *
+             *   o si quiero mostrar una etiqueta en el punto:
+             *   { name: 'John', data: [{name:'punto', color:'#XXX', y:5},{..},{..}] }
+             */
+            var name = dviseries.name[session_lang];
+            if (!name) name = ""; // case that the archetype item doesnt have a name translation to the current language, this should be avoided by listing only OPTs in the current lang.
+            var serie = { name: name, data: [] };
+
+            $.each( dviseries.serie, function(ii, dvi) {
+
+              //console.log('ii y dvi', ii, dvi);
+
+              point = point_builders[dviseries.type](dvi);
+
+              serie.data.push(point);
+            });
+
+            series.push(serie);
+          });
+       });
+       //console.log( series );
+
+       // ========================================
+       // Test chart
+       if (series.length > 0)
+         renderchart(series, containerId, title);
+       // ========================================
+    }; // queryDataRenderChart
+    </script>
+
+  </body>
+</html>
