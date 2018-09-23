@@ -24,13 +24,15 @@
       margin: 10px;
     }
     .chartContainer {
-      width: 100%;
+      /*width: 100%;*/
     }
     </style>
   </head>
   <body>
-    <div id="status"></div>
-    <div id="results"></div>
+    <div class="container">
+      <div id="status"></div>
+      <div id="results"></div>
+    </div>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
@@ -40,8 +42,9 @@
     <script src="../ehrserver_ajax_client.js"></script>
     <script type="text/javascript">
 
-    var standardize_units = function(value, units) {
-
+    // aux/util functions
+    var standardize_units = function(value, units)
+    {
       // m => cm
       if (units == 'm')
       {
@@ -49,6 +52,20 @@
       }
 
       return {units:units, magnitude:value};
+    };
+
+    // number of decimal digits of a float
+    var precision = function (a)
+    {
+      if (!isFinite(a)) return 0;
+      var e = 1, p = 0;
+      while (Math.round(a * e) / e !== a) { e *= 10; p++; }
+      return p;
+    }
+
+    var round_float = function (number, dec_digits)
+    {
+      return Number((number).toFixed(dec_digits));
     };
 
     var ehrserver = ehrserver_ajax_client;
@@ -79,14 +96,22 @@
       $('#status').text('Buscando EHRs');
       ehrserver.ehrs(10, 0, function(data, status, statusText) {
 
-        $('#results').append('<table class="table"><tr><th>EHR UID</th><th>Fecha EHR</th><th>ID Paciente</th><th>Graficas</th></tr></table>');
+        //$('#results').append('<table class="table"><tr><th>EHR UID</th><th>Fecha EHR</th><th>ID Paciente</th><th>Graficas</th></tr></table>');
         rows = '';
         data.ehrs.forEach(function(e, i){
 
-          rows += '<tr data-ehr="'+ e.uid +'"><td>'+ e.uid +'</td><td>'+ e.dateCreated + '</td><td>'+ e.subjectUid + '</td><td></td></tr>';
+          //rows += '<tr data-ehr="'+ e.uid +'"><td>'+ e.uid +'</td><td>'+ e.dateCreated + '</td><td>'+ e.subjectUid + '</td><td></td></tr>';
+          rows += '<table class="table">';
+          rows += '<tr><th>EHR UID</th><td>'+ e.uid +'</td></tr>';
+          rows += '<tr><th>Fecha EHR</th><td>'+ e.dateCreated +'</td></tr>';
+          rows += '<tr><th>ID Paciente</th><td>'+ e.subjectUid +'</td></tr>';
+          rows += '<tr data-ehr="'+ e.uid +'"><td colspan="2" align="center"></td></tr>'
+          rows += '</table>';
+
         });
 
-        $('#results > table').append(rows);
+        //$('#results > table').append(rows);
+        $('#results').append(rows);
 
         $('#status').text('Listado de EHRs');
 
@@ -121,7 +146,8 @@
         // TODO: use query builder chart render
         if (data)
         {
-          $('tr[data-ehr='+ ehr.uid +']').find('td:last').append('<div class="chartContainer" id="chartContainer_'+ chart_id +'"></div>');
+          //$('tr[data-ehr='+ ehr.uid +']').find('td:last').append('<div class="chartContainer" id="chartContainer_'+ chart_id +'"></div>');
+          $('tr[data-ehr='+ ehr.uid +'] > td').append('<span class="chartContainer" id="chartContainer_'+ chart_id +'"></span>');
 
           queryDataRenderChart(data.results, 'chartContainer_'+ chart_id, query.name);
 
@@ -142,7 +168,7 @@
       chart = new Highcharts.Chart({
         chart: {
           renderTo: containerId,
-          width: 600,
+          width: 800,
           type: 'line',
           zoomType: 'x' // lo deja hacer zoom en el eje x, y o ambos: xy
         },
@@ -211,6 +237,12 @@
           DV_QUANTITY: function (dvi) {
              // allows to chart for instance data in cm or m for the same path, or g and kg, etc.
              var su = standardize_units(dvi.magnitude, dvi.units);
+
+             // rounds floats to 2 decimal digits
+             if (precision(su.magnitude) > 2)
+             {
+               su.magnitude = round_float(su.magnitude, 2);
+             }
              return {
                 name: su.magnitude+' '+su.units,
                    y: su.magnitude
