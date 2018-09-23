@@ -40,6 +40,17 @@
     <script src="../ehrserver_ajax_client.js"></script>
     <script type="text/javascript">
 
+    var standardize_units = function(value, units) {
+
+      // m => cm
+      if (units == 'm')
+      {
+        return {units:'cm', magnitude:value*100};
+      }
+
+      return {units:units, magnitude:value};
+    };
+
     var ehrserver = ehrserver_ajax_client;
     var ehrs;
     var ehr_queries;
@@ -198,9 +209,11 @@
              };
           },
           DV_QUANTITY: function (dvi) {
+             // allows to chart for instance data in cm or m for the same path, or g and kg, etc.
+             var su = standardize_units(dvi.magnitude, dvi.units);
              return {
-                name: dvi.magnitude+' '+dvi.units,
-                   y: dvi.magnitude
+                name: su.magnitude+' '+su.units,
+                   y: su.magnitude
              };
           },
           DV_DURATION: function (dvi) {
