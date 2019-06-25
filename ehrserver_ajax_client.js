@@ -1,17 +1,17 @@
 var ehrserver_ajax_client = {
 
    base_url: undefined,
-   do_login: "/api/v1/login",
-   get_user: "/api/v1/users/",
-   get_ehrs: "/api/v1/ehrs",
-   get_ehr:  "/api/v1/ehrs/ehrUid/",
+   do_login:            "/api/v1/login",
+   get_user:            "/api/v1/users/",
+   get_ehrs:            "/api/v1/ehrs",
+   get_ehr:             "/api/v1/ehrs/ehrUid/",
    get_ehr_for_patient: "/api/v1/ehrs/subjectUid/",
    get_contributions:   "/api/v1/contributions",
    get_queries:         "/api/v1/queries",
-   get_query_execute:       "/api/v1/queries", // suffix added by function
-   get_ehr_queries: "/api/v1/getEhrQueries",
-   do_ehr_checker:  "/api/v1/ehrChecker",
-   matching_ehrs:   "/api/v1/getMatchingEhrs",
+   get_query_execute:   "/api/v1/queries", // suffix added by function
+   get_ehr_queries:     "/api/v1/multiqueries",
+   do_ehr_checker:      "/api/v1/multiqueries/",
+   matching_ehrs:       "/api/v1/multiqueries/", // TODO!
    token: undefined, // set by login
 
    init: function(url) {
@@ -230,12 +230,12 @@ var ehrserver_ajax_client = {
         return false;
      }
      $.ajax({
-       url: this.base_url + this.do_ehr_checker,
+       url: this.base_url + this.do_ehr_checker + ehr_query_uid +'/ehrcheck/'+ ehr_uid,
        method: 'GET',
        beforeSend: function(xhr) {
          xhr.setRequestHeader('Authorization', 'Bearer '+ ehrserver_ajax_client.token);
        },
-       data: {format: 'json', ehrQueryUid: ehr_query_uid, ehrUid: ehr_uid}
+       data: {format: 'json'}
      })
      .done( function (data, textStatus, jqXHR) {
        callback(data, jqXHR.status, jqXHR.statusText);
