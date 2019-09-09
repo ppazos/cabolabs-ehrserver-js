@@ -45,7 +45,7 @@
     $(document).ready(function() {
 
       ehrserver.init('https://server001.cloudehrserver.com');
-      ehrserver.set_api_key('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFwaWtleW9ueXZkdnZqd3BmcndibWplYnhneHV3anBpeXFtcXB2eWNwc2djcXFjeWpib2pybHBtIiwiZXh0cmFkYXRhIjp7Im9yZ2FuaXphdGlvbiI6IjcyMzcyMiIsIm9yZ191aWQiOiI1NzkxOTk5MS1mYWExLTQ0YzQtODM2ZC1kYTgyY2I4MjkwZGMifSwiaXNzdWVkX2F0IjoiMjAxOS0wNi0wMVQxNToxOToxOC45MTUtMDM6MDAifQ==.vVNxAdxk9h0BPIEikl9svgumg0UBRZ6CYza1iS++fcA=');
+      ehrserver.set_api_key('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFwaWtleWJhdm1neHJ1ZmR0c2Z6eGVnY293aWxqcnZ0Z3ZocnV3c3ptYmR3dGRkdmlmb29nc2VqIiwiZXh0cmFkYXRhIjp7Im9yZ2FuaXphdGlvbiI6IjcyMzcyMiIsIm9yZ191aWQiOiI1NzkxOTk5MS1mYWExLTQ0YzQtODM2ZC1kYTgyY2I4MjkwZGMifSwiaXNzdWVkX2F0IjoiMjAxOC0wMy0wOFQxOTozMjozMy4wOTUtMDI6MDAifQ==.Nn5/E998q2Ty+Vfahog47pyDTMdJBPTLG3lBBOVLNUQ=');
       get_ehrs();
       /*
       ehrserver.init('http://localhost:8090');
@@ -103,7 +103,7 @@
       ehrserver.ehr_checker(query.uid, ehr.uid, function(data, status, statusText) {
         if (data[0])
         {
-          $('tr[data-ehr='+ ehr.uid +']').find('td:last').append('<span class="label label-'+ color +'">'+ query.name +'</span><br/>');
+          $('tr[data-ehr='+ ehr.uid +']').find('td:last').append('<span class="label label-'+ color +'">'+ (query.name.en ? query.name.en : query.name.es) +'</span><br/>');
         }
       });
     };
