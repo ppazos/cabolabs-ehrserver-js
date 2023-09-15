@@ -103,7 +103,7 @@
       ehrserver.ehr_checker(query.uid, ehr.uid, function(data, status, statusText) {
         if (data[0])
         {
-          $('tr[data-ehr='+ ehr.uid +']').find('td:last').append('<span class="label label-'+ color +'">'+ query.name +'</span><br/>');
+          $('tr[data-ehr='+ ehr.uid +']').find('td:last').append('<span class="label label-'+ color +'">'+ (query.name.en ? query.name.en : query.name.es) +'</span><br/>');
         }
       });
     };

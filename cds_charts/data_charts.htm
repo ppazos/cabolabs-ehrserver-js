@@ -149,7 +149,7 @@
           //$('tr[data-ehr='+ ehr.uid +']').find('td:last').append('<div class="chartContainer" id="chartContainer_'+ chart_id +'"></div>');
           $('tr[data-ehr='+ ehr.uid +'] > td').append('<span class="chartContainer" id="chartContainer_'+ chart_id +'"></span>');
 
-          queryDataRenderChart(data.results, 'chartContainer_'+ chart_id, query.name);
+          queryDataRenderChart(data.results, 'chartContainer_'+ chart_id, query.name[session_lang]);
 
           chart_id++;
         }
